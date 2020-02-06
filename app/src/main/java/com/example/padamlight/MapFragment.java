@@ -41,6 +41,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, MapActi
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         // Instanciate map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map_fragment);
         if (mapFragment != null) {
@@ -51,9 +52,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, MapActi
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        if (mMap != null) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(47.902964, 1.9092510000000402), 16f));
-        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(47.902964, 1.9092510000000402), 16f));
+
     }
 
     @Override

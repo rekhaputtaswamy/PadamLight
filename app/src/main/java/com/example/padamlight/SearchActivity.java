@@ -1,7 +1,15 @@
 package com.example.padamlight;
 
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -16,7 +24,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     @Bind(R.id.spinner_from)
     Spinner mSpinnerFrom;
@@ -24,7 +32,12 @@ public class SearchActivity extends AppCompatActivity {
     Spinner mSpinnerTo;
     @Bind(R.id.button_search)
     Button mButtonSearch;
+    @Bind(R.id.drawerlayout)
+    DrawerLayout drawerLayout;
+    @Bind(R.id.nav)
+    NavigationView navigationView;
 
+    private ActionBarDrawerToggle toggle;
     private MapActionsDelegate mapDelegate;
     private HashMap<String, Suggestion> mFromList;
 
@@ -46,6 +59,15 @@ public class SearchActivity extends AppCompatActivity {
 
         // Binding UI elements defined below
         ButterKnife.bind(this);
+
+        toggle = new ActionBarDrawerToggle(this, drawerLayout,R.string.open, R.string.close);
+
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        navigationView.setNavigationItemSelectedListener(this);
 
         initializeTextViews();
         initSpinners();
@@ -73,11 +95,13 @@ public class SearchActivity extends AppCompatActivity {
     /**
      * Initialize spinners from and to
      */
-    // TODO : Initialize the "To" spinner with data of your choice
     private void initSpinners() {
         List<String> fromList = Toolbox.formatHashmapToList(initFromHashmap());
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, fromList);
         mSpinnerFrom.setAdapter(adapter);
+
+        ArrayAdapter<String> to_adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, fromList);
+        mSpinnerTo.setAdapter(to_adapter);
     }
 
     /**
@@ -98,7 +122,6 @@ public class SearchActivity extends AppCompatActivity {
     /**
      * Define what to do after the button click interaction
      */
-    //TODO : Implement the same thing for "To" spinner
     @OnClick(R.id.button_search)
     void onClickSearch() {
 
@@ -112,6 +135,42 @@ public class SearchActivity extends AppCompatActivity {
             mapDelegate.updateMarker(MarkerType.PICKUP, selectedFrom, selectedFromSuggestion.getLatLng());
             mapDelegate.updateMap(selectedFromSuggestion.getLatLng());
         }
+
+        String selectedTo = String.valueOf(mSpinnerTo.getSelectedItem());
+        if(selectedTo != null || !selectedTo.isEmpty()) {
+            Suggestion selectedToSuggestion = mFromList.get(selectedTo);
+            mapDelegate.updateMarker(MarkerType.DROPOFF, selectedTo, selectedToSuggestion.getLatLng());
+            mapDelegate.updateMap(selectedToSuggestion.getLatLng());
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if(toggle.onOptionsItemSelected(item))
+            return true;
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        switch(id) {
+            case R.id.search_map:
+                if(drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(Gravity.LEFT);
+                }
+                break;
+            case R.id.resume:
+                Intent intent = new Intent(SearchActivity.this, PropositionsActivity.class);
+                startActivity(intent);
+                break;
+            default:
+                return true;
+        }
+        return true;
     }
 }
 
